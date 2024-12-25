@@ -10,7 +10,7 @@ import { replaceAllTextEmojis } from "./utils/emoji-utils";
 import { handleCopy, totalCharacters } from "./utils/input-event-utils";
 
 // hooks
-import { useExpose } from "./hooks/use-expose.tsx";
+import { useExpose } from "./hooks/use-expose";
 import { useEmit } from "./hooks/use-emit";
 
 // components
