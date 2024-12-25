@@ -1,6 +1,7 @@
 // @ts-check
 
 import { useCallback, useRef } from "react";
+import { PolluteFn } from "../types/types";
 
 /**
  * @typedef {import('../types/types').PolluteFn} PolluteFn
@@ -10,15 +11,15 @@ import { useCallback, useRef } from "react";
 /** */
 export function usePollute() {
   /** @type {React.MutableRefObject<PolluteFn[]>} */
-  const polluteFnsRef = useRef([]);
+  const polluteFnsRef = useRef<PolluteFn[]>([]);
 
   /** @type {(fn: PolluteFn) => void} */
-  const addPolluteFn = useCallback(fn => {
+  const addPolluteFn = useCallback((fn: PolluteFn) => {
     polluteFnsRef.current.push(fn);
   }, []);
 
   /** @type {(html: string) => string} */
-  const pollute = useCallback(text => {
+  const pollute = useCallback((text: string) => {
     const result = polluteFnsRef.current.reduce((acc, fn) => {
       return fn(acc);
     }, text);

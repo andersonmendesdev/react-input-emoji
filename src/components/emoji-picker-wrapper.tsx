@@ -11,6 +11,7 @@ import {
 import EmojiPickerButton from "./emoji-picker-button";
 import EmojiPickerContainer from "./emoji-picker-container";
 import { cacheCurrentRange } from "../utils/input-event-utils";
+import { PolluteFn, SanitizeFn } from "../types/types";
 
 const EMOJI_PICKER_CONTAINER_HEIGHT = 435;
 
@@ -44,8 +45,8 @@ interface EmojiPickerWrapperProps {
   keepOpened: boolean;
   disableRecent: boolean;
   customEmojis?: any[];
-  addSanitizeFn: (fn: (html: string) => void) => void;
-  addPolluteFn: (fn: (html: string) => void) => void;
+  addSanitizeFn: (fn: SanitizeFn) => void;
+  addPolluteFn: (fn: PolluteFn) => void;
   appendContent: (html: string) => void;
   buttonElement?: HTMLDivElement;
   buttonRef?: React.MutableRefObject<HTMLButtonElement>;

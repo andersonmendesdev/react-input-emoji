@@ -2,6 +2,7 @@
 
 import { useImperativeHandle } from "react";
 import { useSanitize } from "./use-sanitize";
+import { TextInputRef } from "../text-input";
 
 /**
  * @typedef {Object} Props
@@ -16,8 +17,26 @@ import { useSanitize } from "./use-sanitize";
  *
  * @param {Props} props
  */
-export function useExpose({ ref, textInputRef, setValue, emitChange, shouldConvertEmojiToImage }) {
-  const { sanitize, sanitizedTextRef } = useSanitize(false, shouldConvertEmojiToImage);
+
+interface ExposeProps {
+  ref: React.Ref<any>;
+  textInputRef: React.MutableRefObject<TextInputRef | null>;
+  setValue: (value: string) => void;
+  emitChange: (sanitizedText: string) => void;
+  shouldConvertEmojiToImage?: boolean;
+}
+
+export function useExpose({
+  ref,
+  textInputRef,
+  setValue,
+  emitChange,
+  shouldConvertEmojiToImage
+}: ExposeProps) {
+  const { sanitize, sanitizedTextRef } = useSanitize(
+    false,
+    shouldConvertEmojiToImage
+  );
 
   useImperativeHandle(ref, () => ({
     get value() {
@@ -27,16 +46,13 @@ export function useExpose({ ref, textInputRef, setValue, emitChange, shouldConve
       setValue(value);
     },
     focus: () => {
-      if (textInputRef.current === null) return
+      if (textInputRef.current === null) return;
       textInputRef.current.focus();
     },
     blur: () => {
       if (textInputRef.current !== null) {
-        sanitize(textInputRef.current.html);
-
+        emitChange(sanitize(textInputRef.current.html));
       }
-
-      emitChange();
     }
   }));
 }

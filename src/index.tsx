@@ -7,19 +7,24 @@ import "./styles.css";
 
 // utils
 import { replaceAllTextEmojis } from "./utils/emoji-utils";
-import { handleCopy, totalCharacters } from "./utils/input-event-utils";
+import {
+  handleCopy,
+  handlePaste,
+  totalCharacters
+} from "./utils/input-event-utils";
 
 // hooks
 import { useExpose } from "./hooks/use-expose";
 import { useEmit } from "./hooks/use-emit";
 
 // components
-import TextInput from "./text-input";
+import TextInput, { TextInputRef } from "./text-input";
 import EmojiPickerWrapper from "./components/emoji-picker-wrapper";
 import MentionWrapper from "./components/mention-wrapper";
 import { useEventListeners } from "./hooks/use-event-listeners";
 import { useSanitize } from "./hooks/use-sanitize";
 import { usePollute } from "./hooks/user-pollute";
+import { MentionUser } from "./types/types";
 
 /**
  * @typedef {import('./types/types').MentionUser} MetionUser
@@ -58,7 +63,7 @@ import { usePollute } from "./hooks/user-pollute";
  * @property {string=} background
  * @property {{id: string; name: string; emojis: {id: string; name: string; keywords: string[], skins: {src: string}[]}}[]=} customEmojis
  * @property {import('./types/types').Languages=} language
- * @property {(text: string) => Promise<MetionUser[]>=} searchMention
+ * @property {(text: string) => Promise<MentionUser[]>=} searchMention
  * @property {HTMLDivElement=} buttonElement
  * @property {React.MutableRefObject=} buttonRef
  * @property {boolean} shouldConvertEmojiToImage
@@ -70,57 +75,96 @@ import { usePollute } from "./hooks/user-pollute";
  * @param {React.Ref<any>} ref
  * @return {JSX.Element}
  */
-function InputEmoji(props, ref) {
+
+interface InputEmojiProps {
+  value: string;
+  onChange: (value: string) => void;
+  theme?: "light" | "dark" | "auto";
+  cleanOnEnter?: boolean;
+  onEnter?: (text: string) => void;
+  placeholder?: string;
+  placeholderColor?: string;
+  color?: string;
+  onResize?: (size: { width: number; height: number }) => void;
+  onClick?: () => void;
+  onFocus?: () => void;
+  onBlur?: () => void;
+  shouldReturn: boolean;
+  maxLength?: number;
+  keepOpened?: boolean;
+  onKeyDown?: (event: KeyboardEvent) => void;
+  inputClass?: string;
+  disableRecent?: boolean;
+  tabIndex?: number;
+  height?: number;
+  borderRadius?: number;
+  borderColor?: string;
+  fontSize?: number;
+  fontFamily?: string;
+  background?: string;
+  customEmojis?: {
+    id: string;
+    name: string;
+    emojis: {
+      id: string;
+      name: string;
+      keywords: string[];
+      skins: { src: string }[];
+    }[];
+  }[];
+  language?: import("./types/types").Languages;
+  searchMention?: (text: string) => Promise<MentionUser[]>;
+  buttonElement?: HTMLDivElement;
+  buttonRef?: React.MutableRefObject<HTMLButtonElement>;
+  shouldConvertEmojiToImage: boolean;
+}
+
+const InputEmoji = forwardRef<HTMLDivElement, InputEmojiProps>((props, ref) => {
   const {
+    value,
     onChange,
+    theme = "auto",
+    cleanOnEnter = false,
     onEnter,
+    placeholder = "Type a message",
+    placeholderColor,
+    color = "black",
     onResize,
     onClick,
     onFocus,
     onBlur,
-    onKeyDown,
-    theme,
-    cleanOnEnter,
-    placeholder,
+    shouldReturn = false,
     maxLength,
-    keepOpened,
+    keepOpened = false,
+    onKeyDown,
     inputClass,
-    disableRecent,
-    tabIndex,
-    value,
-    customEmojis,
+    disableRecent = false,
+    tabIndex = 0,
+    height = 30,
+    borderRadius = 21,
+    borderColor = "#EAEAEA",
+    fontSize = 15,
+    fontFamily = "sans-serif",
+    background = "white",
+    customEmojis = [],
     language,
     searchMention,
     buttonElement,
     buttonRef,
-    shouldReturn,
-    shouldConvertEmojiToImage,
-    // style
-    borderRadius,
-    borderColor,
-    fontSize,
-    fontFamily,
-    background,
-    placeholderColor,
-    color
+    shouldConvertEmojiToImage = false
   } = props;
 
-  /** @type {React.MutableRefObject<import('./text-input').Ref | null>} */
-  const textInputRef = useRef(null);
-
+  const textInputRef = useRef<TextInputRef>(null);
   const { addEventListener, listeners } = useEventListeners();
-
   const { addSanitizeFn, sanitize, sanitizedTextRef } = useSanitize(
     shouldReturn,
     shouldConvertEmojiToImage
   );
-
   const { addPolluteFn, pollute } = usePollute();
 
   const updateHTML = useCallback(
     (nextValue = "") => {
-      if (textInputRef.current === null) return;
-
+      if (!textInputRef.current) return;
       textInputRef.current.html = replaceAllTextEmojis(nextValue);
       sanitizedTextRef.current = nextValue;
     },
@@ -128,11 +172,7 @@ function InputEmoji(props, ref) {
   );
 
   const setValue = useCallback(
-    /**
-     *
-     * @param {string} value
-     */
-    value => {
+    (value: string) => {
       updateHTML(value);
     },
     [updateHTML]
@@ -154,21 +194,12 @@ function InputEmoji(props, ref) {
     }
   }, [sanitizedTextRef, setValue, value]);
 
-  // useEffect(() => {
-  //   updateHTML();
-  // }, [updateHTML]);
-
-  useEffect(() => {
-    /**
-     * Handle keydown event
-     * @param {React.KeyboardEvent} event
-     * @return {boolean}
-     */
-    function handleKeydown(event) {
+  const handleKeydown = useCallback(
+    (event: React.KeyboardEvent) => {
       if (
-        typeof maxLength !== "undefined" &&
+        maxLength !== undefined &&
         event.key !== "Backspace" &&
-        textInputRef.current !== null &&
+        textInputRef.current &&
         totalCharacters(textInputRef.current) >= maxLength
       ) {
         event.preventDefault();
@@ -176,15 +207,10 @@ function InputEmoji(props, ref) {
 
       if (event.key === "Enter" && textInputRef.current) {
         event.preventDefault();
-
         const text = sanitize(textInputRef.current.html);
-
         emitChange(sanitizedTextRef.current);
 
-        if (
-          typeof onEnter === "function" &&
-          listeners.enter.currentListerners.length === 0
-        ) {
+        if (onEnter && listeners.enter.currentListerners.length === 0) {
           onEnter(text);
         }
 
@@ -192,122 +218,53 @@ function InputEmoji(props, ref) {
           updateHTML("");
         }
 
-        if (typeof onKeyDown === "function") {
+        if (onKeyDown) {
           onKeyDown(event.nativeEvent);
         }
 
         return false;
       }
 
-      if (typeof onKeyDown === "function") {
+      if (onKeyDown) {
         onKeyDown(event.nativeEvent);
       }
 
       return true;
-    }
+    },
+    [
+      cleanOnEnter,
+      emitChange,
+      listeners.enter.currentListerners.length,
+      maxLength,
+      onEnter,
+      onKeyDown,
+      sanitize,
+      sanitizedTextRef,
+      updateHTML
+    ]
+  );
 
+  useEffect(() => {
     const unsubscribe = addEventListener("keyDown", handleKeydown);
-
-    return () => {
-      unsubscribe();
-    };
-  }, [
-    addEventListener,
-    cleanOnEnter,
-    emitChange,
-    listeners.enter.currentListerners.length,
-    maxLength,
-    onEnter,
-    onKeyDown,
-    sanitize,
-    sanitizedTextRef,
-    updateHTML
-  ]);
-
-  useEffect(() => {
-    /** */
-    function handleFocus() {
-      if (typeof onClick === "function") {
-        onClick();
-      }
-
-      if (typeof onFocus === "function") {
-        onFocus();
-      }
-    }
-
-    const unsubscribe = addEventListener("focus", handleFocus);
-
-    return () => {
-      unsubscribe();
-    };
-  }, [addEventListener, onClick, onFocus]);
-
-  useEffect(() => {
-    /** */
-    function handleBlur() {
-      if (typeof onBlur === "function") {
-        onBlur();
-      }
-    }
-
-    const unsubscribe = addEventListener("blur", handleBlur);
-
-    return () => {
-      unsubscribe();
-    };
-  }, [addEventListener, onBlur]);
-
-  /**
-   *
-   * @param {string} html
-   */
-  function handleTextInputChange(html) {
-    sanitize(html);
-
-    if (value !== sanitizedTextRef.current) {
-      emitChange(sanitizedTextRef.current);
-    }
-  }
-
-  /**
-   *
-   * @param {string} html
-   */
-  function appendContent(html) {
-    if (
-      typeof maxLength !== "undefined" &&
-      textInputRef.current !== null &&
-      totalCharacters(textInputRef.current) >= maxLength
-    ) {
-      return;
-    }
-
-    if (textInputRef.current !== null) {
-      textInputRef.current.appendContent(html);
-    }
-  }
-
-  /**
-   * Handle past on input
-   * @param {React.ClipboardEvent} event
-   */
-  function handlePaste(event) {
-    event.preventDefault();
-    let content;
-    if (event.clipboardData) {
-      content = event.clipboardData.getData("text/plain");
-      content = pollute(content);
-      document.execCommand("insertHTML", false, content);
-    }
-  }
+    return () => unsubscribe();
+  }, [addEventListener, handleKeydown]);
 
   return (
     <div className="react-emoji">
       <MentionWrapper
         searchMention={searchMention}
         addEventListener={addEventListener}
-        appendContent={appendContent}
+        appendContent={(html: string) => {
+          if (
+            maxLength !== undefined &&
+            textInputRef.current &&
+            totalCharacters(textInputRef.current) >= maxLength
+          ) {
+            return;
+          }
+
+          textInputRef.current?.appendContent(html);
+        }}
         addSanitizeFn={addSanitizeFn}
       />
       <TextInput
@@ -315,13 +272,6 @@ function InputEmoji(props, ref) {
         onCopy={handleCopy}
         onPaste={handlePaste}
         shouldReturn={shouldReturn}
-        onBlur={listeners.blur.publish}
-        onFocus={listeners.focus.publish}
-        onArrowUp={listeners.arrowUp.publish}
-        onArrowDown={listeners.arrowDown.publish}
-        onKeyUp={listeners.keyUp.publish}
-        onKeyDown={listeners.keyDown.publish}
-        onEnter={listeners.enter.publish}
         placeholder={placeholder}
         style={{
           borderRadius,
@@ -334,7 +284,18 @@ function InputEmoji(props, ref) {
         }}
         tabIndex={tabIndex}
         className={inputClass}
-        onChange={handleTextInputChange}
+        onChange={(html: string) => {
+          sanitize(html);
+          emitChange(sanitizedTextRef.current);
+        }}
+        onBlur={listeners.blur.publish}
+        onFocus={listeners.focus.publish}
+        onArrowUp={listeners.arrowUp.publish}
+        onArrowDown={listeners.arrowDown.publish}
+        onKeyUp={listeners.keyUp.publish}
+        onKeyDown={listeners.keyDown.publish}
+        onEnter={listeners.enter.publish}
+        onClick={onClick}
       />
       <EmojiPickerWrapper
         theme={theme}
@@ -343,32 +304,15 @@ function InputEmoji(props, ref) {
         customEmojis={customEmojis}
         addSanitizeFn={addSanitizeFn}
         addPolluteFn={addPolluteFn}
-        appendContent={appendContent}
+        appendContent={(html: string) =>
+          textInputRef.current?.appendContent(html)
+        }
         buttonElement={buttonElement}
         buttonRef={buttonRef}
         language={language}
       />
     </div>
   );
-}
+});
 
-const InputEmojiWithRef = forwardRef(InputEmoji);
-
-InputEmojiWithRef.defaultProps = {
-  theme: /** @type {const} */ "auto",
-  height: 30,
-  placeholder: "Type a message",
-  borderRadius: 21,
-  borderColor: "#EAEAEA",
-  color: "black",
-  fontSize: 15,
-  fontFamily: "sans-serif",
-  background: "white",
-  tabIndex: 0,
-  shouldReturn: false,
-  shouldConvertEmojiToImage: false,
-  customEmojis: [],
-  language: undefined
-};
-
-export default InputEmojiWithRef;
+export default InputEmoji;

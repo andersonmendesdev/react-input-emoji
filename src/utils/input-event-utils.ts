@@ -3,7 +3,7 @@
 import {
   getImageEmoji,
   replaceAllTextEmojis,
-  replaceAllTextEmojiToString,
+  replaceAllTextEmojiToString
 } from "./emoji-utils";
 
 /**
@@ -38,7 +38,13 @@ let currentRangeCached;
  */
 export function cacheCurrentRange() {
   const selection = window.getSelection();
-  if (!selection.rangeCount || (selection?.anchorNode['className'] !== 'react-input-emoji--input' && selection.anchorNode.parentNode['className'] !== 'react-input-emoji--input')) return;
+  if (
+    !selection.rangeCount ||
+    (selection?.anchorNode["className"] !== "react-input-emoji--input" &&
+      selection.anchorNode.parentNode["className"] !==
+        "react-input-emoji--input")
+  )
+    return;
   const range = selection.getRangeAt(0);
 
   currentRangeCached = range.cloneRange();
@@ -82,7 +88,7 @@ export function handlePasteHtmlAtCaret(html) {
       // Preserve the selection
       if (lastNode) {
         range = range.cloneRange();
-        currentRangeCached = range
+        currentRangeCached = range;
         range.setStartAfter(lastNode);
         range.collapse(true);
         sel.removeAllRanges();
@@ -100,7 +106,7 @@ export function handlePasteHtmlAtCaret(html) {
 function replaceEmojiToString(container) {
   const images = Array.prototype.slice.call(container.querySelectorAll("img"));
 
-  images.forEach((image) => {
+  images.forEach(image => {
     image.outerHTML = image.dataset.emoji;
   });
 
@@ -154,7 +160,7 @@ export function handleSelectEmoji({
   textInputRef,
   keepOpened,
   toggleShowPicker,
-  maxLength,
+  maxLength
 }) {
   if (
     typeof maxLength !== "undefined" &&
@@ -195,9 +201,9 @@ export function handleKeyup(
   emitChange,
   onKeyDownMention,
   cleanedTextRef,
-  textInputRef,
+  textInputRef
 ) {
-  return (event) => {
+  return event => {
     const text = replaceAllTextEmojiToString(textInputRef.current.innerHTML);
     cleanedTextRef.current = text;
     emitChange();
@@ -211,7 +217,7 @@ export function handleKeyup(
  * @return {function(FocusEvent): void}
  */
 export function handleFocus(onFocus) {
-  return (event) => {
+  return event => {
     onFocus(event);
   };
 }
@@ -239,7 +245,7 @@ export function moveCaretToEnd(input) {
  * @param {HTMLDivElement} inputDiv
  * @return {string}
  */
-export function removeHtmlExceptBr(inputDiv) {
+export function removeHtmlExceptBr(inputDiv: HTMLDivElement) {
   const temp = inputDiv.innerHTML.replaceAll(/<br\s*\/?>/gi, "[BR]"); // temporarily replace <br> with placeholder
   const tempContainer = document.createElement("div");
   tempContainer.innerHTML = temp;
@@ -249,9 +255,9 @@ export function removeHtmlExceptBr(inputDiv) {
 }
 
 /**
- * 
- * @param {*} range 
- * @returns 
+ *
+ * @param {*} range
+ * @returns
  */
 export function getSelectionStart(range) {
   let node = range.startContainer;
@@ -276,7 +282,7 @@ export function getSelectionStart(range) {
 }
 
 /**
- * 
+ *
  * @return {Object} cursor
  */
 export function getCursor() {
@@ -284,14 +290,14 @@ export function getCursor() {
   const range = selection.getRangeAt(0);
   const selectionStart = getSelectionStart(range);
 
-  return  {selection, range, selectionStart}
+  return { selection, range, selectionStart };
 }
 
 /**
  *
  */
 export function addLineBreak() {
-  const { selection, range, selectionStart } = getCursor()
+  const { selection, range, selectionStart } = getCursor();
 
   // If cursor is at the end of the text content, add one more line break
   if (
