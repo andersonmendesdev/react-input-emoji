@@ -3,7 +3,7 @@ import React, { memo, useEffect, useMemo, useState } from "react";
 import Picker from "@emoji-mart/react";
 
 const EMOJI_MART_DATA_URL = "https://cdn.jsdelivr.net/npm/@emoji-mart/data";
-const cacheI18n = {};
+const cacheI18n: Record<string, string> = {};
 
 /**
  * @typedef {object} Props
@@ -18,7 +18,17 @@ const cacheI18n = {};
  * Emoji Picker Component
  * @param {Props} props
  */
-function EmojiPicker(props) {
+
+
+interface EmojiPickerProps { 
+  theme: "light" | "dark" | "auto";
+  onSelectEmoji: (emoji: import("../types/types").EmojiMartItem) => void;
+  disableRecent: boolean;
+  customEmojis?: any[];
+  language?: import("../types/types").Languages;
+}
+
+function EmojiPicker(props: EmojiPickerProps) {
   const { theme, onSelectEmoji, disableRecent, customEmojis, language } = props;
 
   /** @type {string[]} */
@@ -56,14 +66,14 @@ function EmojiPicker(props) {
 
       // @ts-ignore
       fetch(`${EMOJI_MART_DATA_URL}/i18n/en.json`)
-      .then(async data => {
-        const translations = await data.json();
-        setI18n(translations);
-        cacheI18n.en = translations;
-      })
-      .catch(error => {
-        console.error("Failed to load translations:", error);
-      });
+        .then(async data => {
+          const translations = await data.json();
+          setI18n(translations);
+          cacheI18n.en = translations;
+        })
+        .catch(error => {
+          console.error("Failed to load translations:", error);
+        });
       return;
     }
 

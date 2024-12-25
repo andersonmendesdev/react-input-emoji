@@ -1,4 +1,3 @@
-import React from "react";
 import EmojiPicker from "./emoji-picker";
 
 /**
@@ -15,8 +14,18 @@ import EmojiPicker from "./emoji-picker";
 /**
  * Emoji Picker Button Component
  * @param {Props} props
- * @return {JSX.Element}
+ * @return {TSX.Element}
  */
+interface EmojiPickerContainerProps {
+  showPicker: boolean;
+  theme: "light" | "dark" | "auto";
+  handleSelectEmoji: (emoji: import("../types/types").EmojiMartItem) => void;
+  disableRecent: boolean;
+  customEmojis?: any[];
+  position?: "above" | "below";
+  language?: import("../types/types").Languages;
+}
+
 function EmojiPickerContainer({
   showPicker,
   theme,
@@ -25,14 +34,14 @@ function EmojiPickerContainer({
   customEmojis,
   position,
   language
-}) {
+}: EmojiPickerContainerProps) {
   return (
     <div className="react-emoji-picker--container">
       {showPicker && (
         <div
           className="react-emoji-picker--wrapper"
           onClick={evt => evt.stopPropagation()}
-          style={position === 'below' ? {top: '40px'} : {}}
+          style={position === "below" ? { top: "40px" } : {}}
         >
           <div className="react-emoji-picker">
             <EmojiPicker

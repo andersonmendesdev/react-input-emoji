@@ -1,6 +1,6 @@
 // @ts-check
 // vendors
-import React, { useEffect, useRef, forwardRef, useCallback } from "react";
+import { useEffect, useRef, forwardRef, useCallback } from "react";
 
 // css
 import "./styles.css";
@@ -10,7 +10,7 @@ import { replaceAllTextEmojis } from "./utils/emoji-utils";
 import { handleCopy, totalCharacters } from "./utils/input-event-utils";
 
 // hooks
-import { useExpose } from "./hooks/use-expose";
+import { useExpose } from "./hooks/use-expose.tsx";
 import { useEmit } from "./hooks/use-emit";
 
 // components
@@ -102,7 +102,7 @@ function InputEmoji(props, ref) {
     fontFamily,
     background,
     placeholderColor,
-    color,
+    color
   } = props;
 
   /** @type {React.MutableRefObject<import('./text-input').Ref | null>} */
@@ -110,7 +110,10 @@ function InputEmoji(props, ref) {
 
   const { addEventListener, listeners } = useEventListeners();
 
-  const { addSanitizeFn, sanitize, sanitizedTextRef } = useSanitize(shouldReturn, shouldConvertEmojiToImage);
+  const { addSanitizeFn, sanitize, sanitizedTextRef } = useSanitize(
+    shouldReturn,
+    shouldConvertEmojiToImage
+  );
 
   const { addPolluteFn, pollute } = usePollute();
 
@@ -126,10 +129,10 @@ function InputEmoji(props, ref) {
 
   const setValue = useCallback(
     /**
-     * 
+     *
      * @param {string} value
      */
-    (value) => {
+    value => {
       updateHTML(value);
     },
     [updateHTML]
@@ -352,7 +355,7 @@ function InputEmoji(props, ref) {
 const InputEmojiWithRef = forwardRef(InputEmoji);
 
 InputEmojiWithRef.defaultProps = {
-  theme: /** @type {const} */ ("auto"),
+  theme: /** @type {const} */ "auto",
   height: 30,
   placeholder: "Type a message",
   borderRadius: 21,
@@ -365,7 +368,7 @@ InputEmojiWithRef.defaultProps = {
   shouldReturn: false,
   shouldConvertEmojiToImage: false,
   customEmojis: [],
-  language: undefined,
+  language: undefined
 };
 
 export default InputEmojiWithRef;

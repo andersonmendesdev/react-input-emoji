@@ -1,12 +1,13 @@
 // @ts-check
 // vendors
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 // hooks
 import { useMention } from "../hooks/use-mention";
+import { MentionUser, TextInputListeners } from "../types/types";
 
 // components
-import MentionUserList from "./mention-user-list";
+import MentionUserList, { MentionUserListRef } from "./mention-user-list";
 
 /**
  * @typedef {import('../types/types').MentionUser} MetionUser
@@ -30,14 +31,25 @@ import MentionUserList from "./mention-user-list";
 
 // eslint-disable-next-line valid-jsdoc
 /** @type {React.FC<Props>} */
+
+export interface MentionWrapperProps {
+  searchMention?: (text: string) => Promise<MentionUser[]>;
+  addEventListener: (
+    event: keyof TextInputListeners,
+    fn: import("../types/types").Listerner<any>
+  ) => () => void;
+  appendContent: (html: string) => void;
+  addSanitizeFn: (fn: (html: string) => string) => void;
+}
+
 const MentionWrapper = ({
   searchMention,
   addEventListener,
   appendContent,
   addSanitizeFn
-}) => {
+}: MentionWrapperProps) => {
   /** @type {React.MutableRefObject<import('./mention-user-list').Ref | null>} */
-  const metionUserListRef = useRef(null);
+  const metionUserListRef = useRef<MentionUserListRef>(null);
   const [showUserList, setShowUserList] = useState(false);
 
   const {

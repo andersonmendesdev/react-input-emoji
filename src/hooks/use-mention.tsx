@@ -5,6 +5,7 @@ import {
   getElementWithFocus,
   getTextFromAtToCaret
 } from "../utils/mention-utils";
+import { MentionUser } from "../types/types";
 
 /**
  * @typedef {import('../types/types').MentionUser} MentionUser
@@ -16,7 +17,7 @@ import {
  * @param {(text: string) => Promise<MentionUser[]>=} searchMention
  * @returns {{mentionSearchText: string | null, mentionUsers: MentionUser[], onKeyUp: (event: React.KeyboardEvent) => void, onFocus: () => void, onSelectUser: () => void, loading: boolean}}
  */
-export function useMention(searchMention) {
+export function useMention(searchMention:(text: string) => Promise<MentionUser[]>) {
   const [loading, setLoading] = useState(false);
 
   /** @type {[MentionUser[], React.Dispatch<React.SetStateAction<MentionUser[]>>]} */

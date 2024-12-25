@@ -1,5 +1,5 @@
 // vendors
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 /**
  * @typedef {object} Props
@@ -12,10 +12,22 @@ import React, { useEffect, useRef, useState } from "react";
 /**
  * Emoji Picker Button Component
  * @param {Props} props
- * @return {JSX.Element}
+ * @return {TSX.Element}
  */
-function EmojiPickerButton({ showPicker, toggleShowPicker, buttonElement, buttonRef }) {
-  
+
+interface EmojiPickerButtonProps {
+  showPicker: boolean;
+  toggleShowPicker: (event: React.MouseEvent<HTMLButtonElement>) => void;
+  buttonElement?: HTMLDivElement | HTMLButtonElement;
+  buttonRef?: React.MutableRefObject<HTMLButtonElement>;
+}
+
+function EmojiPickerButton({
+  showPicker,
+  toggleShowPicker,
+  buttonElement,
+  buttonRef
+}: EmojiPickerButtonProps) {
   const localButtonRef = useRef(null);
   const [showCustomButtonContent, setShowCustomButtonContent] = useState(false);
 

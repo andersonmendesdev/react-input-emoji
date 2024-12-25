@@ -38,7 +38,21 @@ const EMOJI_PICKER_CONTAINER_HEIGHT = 435;
 
 // eslint-disable-next-line valid-jsdoc
 /** @type {React.FC<Props>} */
-const EmojiPickerWrapper = props => {
+
+interface EmojiPickerWrapperProps {
+  theme: "light" | "dark" | "auto";
+  keepOpened: boolean;
+  disableRecent: boolean;
+  customEmojis?: any[];
+  addSanitizeFn: (fn: (html: string) => void) => void;
+  addPolluteFn: (fn: (html: string) => void) => void;
+  appendContent: (html: string) => void;
+  buttonElement?: HTMLDivElement;
+  buttonRef?: React.MutableRefObject<HTMLButtonElement>;
+  language?: import("../types/types").Languages;
+}
+
+const EmojiPickerWrapper = (props: EmojiPickerWrapperProps) => {
   const {
     theme,
     keepOpened,
@@ -54,15 +68,17 @@ const EmojiPickerWrapper = props => {
 
   const [showPicker, setShowPicker] = useState(false);
   /** @type {[HTMLDivElement | undefined, React.Dispatch<React.SetStateAction<HTMLDivElement | undefined>>]} */
-  const [customButton, setCustomButton] = useState();
+  const [customButton, setCustomButton] = useState<HTMLDivElement | HTMLButtonElement | undefined>(undefined);
   /** @type {['above' | 'below' | undefined, React.Dispatch<React.SetStateAction<'above' | 'below' | undefined>>]} */
-  const [emojiPickerPosition, setEmojiPickerPosition] = useState()
+  const [emojiPickerPosition, setEmojiPickerPosition] = useState<PositionType>(
+    "below"
+  );
 
   useEffect(() => {
     if (showPicker) {
-      cacheCurrentRange()
+      cacheCurrentRange();
     }
-  }, [showPicker])
+  }, [showPicker]);
 
   useEffect(() => {
     addSanitizeFn(replaceAllTextEmojiToString);
@@ -103,33 +119,37 @@ const EmojiPickerWrapper = props => {
    *
    * @param {React.MouseEvent} event
    */
-  function toggleShowPicker(event) {
+  function toggleShowPicker(event: React.MouseEvent<HTMLButtonElement>) {
     event.stopPropagation();
     event.preventDefault();
 
-    setEmojiPickerPosition(calcTopPosition(event))
+    setEmojiPickerPosition(calcTopPosition(event));
 
     setShowPicker(currentShowPicker => !currentShowPicker);
   }
 
+  type PositionType = "above" | "below";
+
   /**
-   * 
+   *
    * @param {React.MouseEvent} event
    * @return {'above' | 'below'}
    */
-  function calcTopPosition(event) {
-    const btn = event.currentTarget
+  function calcTopPosition(
+    event: React.MouseEvent<HTMLButtonElement>
+  ): PositionType {
+    const btn = event.currentTarget;
     const btnRect = btn.getBoundingClientRect();
 
     const popoverHeight = EMOJI_PICKER_CONTAINER_HEIGHT;
 
     // Decide to display above or below based on available space
     if (btnRect.top >= popoverHeight) {
-        // Display above
-        return 'above'
+      // Display above
+      return "above";
     } else {
-        // Display below
-        return 'below'
+      // Display below
+      return "below";
     }
   }
 
@@ -150,14 +170,14 @@ const EmojiPickerWrapper = props => {
     if (buttonRef?.current?.style) {
       buttonRef.current.style.position = "relative";
       setCustomButton(buttonRef.current);
-    }  else if (buttonElement?.style) {
+    } else if (buttonElement?.style) {
       buttonElement.style.position = "relative";
       setCustomButton(buttonElement);
     }
   }, [buttonRef, buttonElement]);
 
   return customButton ? (
-    (ReactDOM.createPortal(
+    ReactDOM.createPortal(
       <>
         <EmojiPickerContainer
           showPicker={showPicker}
@@ -176,9 +196,9 @@ const EmojiPickerWrapper = props => {
         />
       </>,
       customButton
-    ))
+    )
   ) : (
-    (<>
+    <>
       <EmojiPickerContainer
         showPicker={showPicker}
         theme={theme}
@@ -192,7 +212,7 @@ const EmojiPickerWrapper = props => {
         showPicker={showPicker}
         toggleShowPicker={toggleShowPicker}
       />
-    </>)
+    </>
   );
 };
 

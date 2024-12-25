@@ -62,7 +62,9 @@ export function getImageEmoji(emoji) {
   }
 
   /** @type {HTMLSpanElement | null=} */
-  const emojiSpanEl = emojiPickerEl?.shadowRoot?.querySelector(`[title="${emoji.name}"] > span > span`)
+  const emojiSpanEl = emojiPickerEl?.shadowRoot?.querySelector(
+    `[title="${emoji.name}"] > span > span`
+  ) as HTMLSpanElement | null;
 
   if (!emojiSpanEl) {
     return getInputEmojiNativeHTML(emoji.native)

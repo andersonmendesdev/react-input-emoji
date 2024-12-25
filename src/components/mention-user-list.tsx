@@ -1,12 +1,13 @@
 // @ts-check
 // vendors
-import React, {
+import {
   useImperativeHandle,
   useState,
   forwardRef,
   useMemo,
   useEffect
 } from "react";
+import { MentionUser, TextInputListeners } from "../types/types";
 
 /**
  * @typedef {import('../types/types').MentionUser} MentionUser
@@ -30,11 +31,23 @@ import React, {
 
 // eslint-disable-next-line valid-jsdoc
 /** @type {React.ForwardRefRenderFunction<Ref, Props>} */
-const MentionUserList = (
-  { users, mentionSearchText, onSelect, addEventListener },
-  ref
-) => {
-  const [selectedUser, setSelectedUser] = useState(0);
+
+
+interface MentionUserListProps { 
+  users: MentionUser[];
+  mentionSearchText: string | null;
+  onSelect: (user: MentionUser) => void;
+  addEventListener: (event: keyof TextInputListeners, fn: import('../types/types').Listerner<any>) => () => void;
+}
+
+export interface MentionUserListRef {
+  prevUser: () => void;
+  nextUser: () => void;
+}
+
+const MentionUserList = forwardRef<MentionUserListRef, MentionUserListProps>(
+  ({ users, mentionSearchText, onSelect, addEventListener }, ref) => {
+    const [selectedUser, setSelectedUser] = useState(0);
 
   useImperativeHandle(ref, () => ({
     prevUser: () => {
@@ -166,8 +179,6 @@ const MentionUserList = (
       ))}
     </ul>
   );
-};
+});
 
-const MentionUserListWithRef = forwardRef(MentionUserList);
-
-export default MentionUserListWithRef;
+export default MentionUserList;

@@ -8,7 +8,7 @@ module.exports = {
   rules: {
     "react-hooks/rules-of-hooks": "warn", // Checks rules of Hooks
     "react-hooks/exhaustive-deps": "warn", // Checks effect dependencies,
-    "react/jsx-uses-react": "error",
-    "react/jsx-uses-vars": "error"
+    "react/jsx-uses-react": "warning",
+    "react/jsx-uses-vars": "warning"
   }
 };

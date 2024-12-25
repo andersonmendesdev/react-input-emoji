@@ -1,7 +1,9 @@
-// @ts-check
-// vendors
-import React, { useImperativeHandle, forwardRef, useRef, useMemo } from "react";
-import { addLineBreak, handlePasteHtmlAtCaret } from "./utils/input-event-utils";
+
+import { useImperativeHandle, forwardRef, useRef, useMemo } from "react";
+import {
+  addLineBreak,
+  handlePasteHtmlAtCaret
+} from "./utils/input-event-utils";
 import { replaceAllTextEmojiToString } from "./utils/emoji-utils";
 
 /**
@@ -52,13 +54,17 @@ const TextInput = (
         textInputRef.current.focus();
       }
 
-      if (textInputRef.current && placeholderRef.current && replaceAllTextEmojiToString(textInputRef.current.innerHTML) === "") {
+      if (
+        textInputRef.current &&
+        placeholderRef.current &&
+        replaceAllTextEmojiToString(textInputRef.current.innerHTML) === ""
+      ) {
         placeholderRef.current.style.visibility = "visible";
       } else if (placeholderRef.current) {
         placeholderRef.current.style.visibility = "hidden";
       }
 
-      if (textInputRef.current && typeof onChange === 'function') {
+      if (textInputRef.current && typeof onChange === "function") {
         onChange(textInputRef.current.innerHTML);
       }
     },
@@ -66,9 +72,9 @@ const TextInput = (
       if (textInputRef.current) {
         textInputRef.current.innerHTML = value;
       }
-      
+
       if (placeholderRef.current) {
-        const text = replaceAllTextEmojiToString(value)
+        const text = replaceAllTextEmojiToString(value);
         if (text === "") {
           placeholderRef.current.style.visibility = "visible";
         } else {
@@ -76,17 +82,17 @@ const TextInput = (
         }
       }
 
-      if (typeof onChange === 'function' && textInputRef.current) {
+      if (typeof onChange === "function" && textInputRef.current) {
         onChange(textInputRef.current.innerHTML);
       }
     },
     get html() {
-      if (!textInputRef.current) return ''
+      if (!textInputRef.current) return "";
 
       return textInputRef.current.innerHTML;
     },
     get text() {
-      if (!textInputRef.current) return ''
+      if (!textInputRef.current) return "";
 
       return textInputRef.current.innerText;
     },
@@ -95,7 +101,7 @@ const TextInput = (
         return {
           width: 0,
           height: 0
-        }
+        };
       }
 
       return {
@@ -104,7 +110,7 @@ const TextInput = (
       };
     },
     focus() {
-      if (!textInputRef.current) return
+      if (!textInputRef.current) return;
 
       textInputRef.current.focus();
     }
@@ -112,25 +118,26 @@ const TextInput = (
 
   /** @type {React.CSSProperties} */
   const placeholderStyle = useMemo(() => {
-    const placeholderStyle = {}
+    const placeholderStyle: Record<string, string> = {};
 
     if (style.placeholderColor) {
-      placeholderStyle.color = style.placeholderColor
+      placeholderStyle.color = style.placeholderColor;
     }
 
-    return placeholderStyle
-  }, [style?.placeholderColor])
+    return placeholderStyle;
+  }, [style?.placeholderColor]);
 
   /** @type {React.CSSProperties} */
   const inputStyle = useMemo(() => {
-    const inputStyle = {}
+    // eslint-disable-next-line prefer-const
+    const inputStyle: Record<string, string> = {};
 
     if (style.color) {
-      inputStyle.color = style.color
+      inputStyle.color = style.color;
     }
 
-    return inputStyle
-  }, [style?.color])
+    return inputStyle;
+  }, [style?.color]);
 
   /** @type {React.MutableRefObject<HTMLDivElement | null>} */
   const placeholderRef = useRef(null);
@@ -141,14 +148,18 @@ const TextInput = (
    *
    * @param {React.KeyboardEvent} event
    */
-  function handleKeyDown(event) {    
-    if (event.key === "Enter" && (event.shiftKey === true || event.ctrlKey === true) && props.shouldReturn) {
+  function handleKeyDown(event) {
+    if (
+      event.key === "Enter" &&
+      (event.shiftKey === true || event.ctrlKey === true) &&
+      props.shouldReturn
+    ) {
       event.preventDefault();
-      if(textInputRef.current) {
-        addLineBreak()
+      if (textInputRef.current) {
+        addLineBreak();
         return;
       }
-    } 
+    }
     if (event.key === "Enter") {
       props.onEnter(event);
     } else if (event.key === "ArrowUp") {
@@ -179,7 +190,7 @@ const TextInput = (
     const input = textInputRef.current;
 
     if (placeholderRef.current && input) {
-      const text = replaceAllTextEmojiToString(input.innerHTML)
+      const text = replaceAllTextEmojiToString(input.innerHTML);
       if (text === "") {
         placeholderRef.current.style.visibility = "visible";
       } else {
@@ -187,7 +198,7 @@ const TextInput = (
       }
     }
 
-    if (typeof onChange === 'function' && textInputRef.current) {
+    if (typeof onChange === "function" && textInputRef.current) {
       onChange(textInputRef.current.innerHTML);
     }
   }
@@ -195,7 +206,11 @@ const TextInput = (
   return (
     <div className="react-input-emoji--container" style={style}>
       <div className="react-input-emoji--wrapper" onClick={handleClick}>
-        <div ref={placeholderRef} className="react-input-emoji--placeholder" style={placeholderStyle}>
+        <div
+          ref={placeholderRef}
+          className="react-input-emoji--placeholder"
+          style={placeholderStyle}
+        >
           {placeholder}
         </div>
         <div
@@ -204,8 +219,9 @@ const TextInput = (
           onKeyUp={handleKeyUp}
           tabIndex={tabIndex}
           contentEditable
-          className={`react-input-emoji--input${className ? ` ${className}` : ""
-            }`}
+          className={`react-input-emoji--input${
+            className ? ` ${className}` : ""
+          }`}
           onBlur={props.onBlur}
           onCopy={props.onCopy}
           onPaste={props.onPaste}
