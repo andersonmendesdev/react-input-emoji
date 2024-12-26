@@ -25,7 +25,7 @@
     "test:watch": "jest --watch",
     "build": "tsc && rollup -c",
     "start": "rollup -c -w",
-    "prepare": "npx run build",
+    "prepare": "pnpm build",
     "predeploy": "cd example && pnpm install && pnpm build",
     "deploy": "gh-pages -d example/build",
     "gen:types": "tsc"
